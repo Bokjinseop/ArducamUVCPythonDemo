@@ -5,6 +5,7 @@ from utils import *
 
 display_fps.start = time.monotonic()
 display_fps.frame_count = 0
+# python .\arducam_demo.py -W 4208 -H 3120 -f 12 -d 1280:960
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -32,6 +33,11 @@ if __name__ == "__main__":
     cap.set_height(height)
     cap.set_fps(fps)
     cap.open()
+    tol=5.0
+    max_iter=7
+    delay=0.05
+    scale=0.4
+    crop_ratio=0.6
 
     if not cap.isOpened():
         print("Can't open camera")
@@ -63,7 +69,7 @@ if __name__ == "__main__":
                 else:
                     print("reopen failed")
 
-        display_fps(frame)
+        #display_fps(frame)
         cv2.imshow("video", frame)
 
         key = cv2.waitKey(1)                                            
@@ -73,7 +79,21 @@ if __name__ == "__main__":
             time_str = time.strftime('%Y-%m-%d') + time.strftime('_%H_%M_%S')
             output_path = f"{width}x{height}_{time_str}.jpg"
             cv2.imwrite(f"{output_path}", frame)
-
+        elif key == ord("f"):
+            start = time.perf_counter()
+            #cap.diagnostic_sweep()
+            focus_val, focus_score = cap.autofocus_brent(
+                low=0,
+                high=1023,
+                tol=tol,
+                max_iter=max_iter,
+                delay=delay,
+                scale=scale,
+                crop_ratio=crop_ratio,
+                show=True
+            )
+            end = time.perf_counter()
+            print(f"실행 시간: {end - start:.6f}초")
     cap.release()
 
     cv2.destroyAllWindows()
